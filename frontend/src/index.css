@@ -21,14 +21,14 @@
 html.light {
   --bg-base:          #f1f5f9;
   --bg-surface:       #ffffff;
-  --bg-elevated:      #f8fafc;
+  --bg-elevated:      #f0f4f8;
   --border-color:     #e2e8f0;
   --border-subtle:    #cbd5e1;
   --text-primary:     #0f172a;
-  --text-secondary:   #334155;
-  --text-muted:       #64748b;
+  --text-secondary:   #1e293b;
+  --text-muted:       #475569;
   --text-placeholder: #94a3b8;
-  --input-bg:         #f8fafc;
+  --input-bg:         #ffffff;
   --input-border:     #cbd5e1;
   --scrollbar-track:  #f1f5f9;
   --scrollbar-thumb:  #cbd5e1;
@@ -73,19 +73,10 @@ body {
   border-color: #6366f1;
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
 }
-select.input-field  { cursor: pointer; }
+select.input-field   { cursor: pointer; }
 textarea.input-field { resize: none; }
 
-/* ─── Search input wrapper (fixes icon overlap) ──────────────── */
-/*
-  Use .search-wrapper to wrap a search icon + input.
-  The icon sits at left-3, so we add pl-9 to the input.
-  Example usage in JSX:
-    <div className="search-wrapper">
-      <Search size={16} className="search-icon" />
-      <input className="input-field search-input" placeholder="Search..." />
-    </div>
-*/
+/* ─── Search wrapper ─────────────────────────────────────────── */
 .search-wrapper {
   position: relative;
   display: flex;
@@ -102,7 +93,7 @@ textarea.input-field { resize: none; }
   flex-shrink: 0;
 }
 .search-wrapper .search-input {
-  padding-left: 2.375rem; /* 38px: icon(16px) + left(12px) + gap(10px) */
+  padding-left: 2.375rem;
 }
 
 /* ─── Labels ─────────────────────────────────────────────────── */
@@ -129,7 +120,7 @@ textarea.input-field { resize: none; }
   align-items: center;
   gap: 0.375rem;
 }
-.btn-primary:hover   { background-color: #4338ca; }
+.btn-primary:hover    { background-color: #4338ca; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-secondary {
@@ -156,11 +147,7 @@ textarea.input-field { resize: none; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Nav link — ALWAYS reserve border space to avoid shift ─── */
-/*
-  Both active and inactive states have border: 1px solid.
-  Inactive uses transparent border so layout doesn't shift.
-*/
+/* ─── Nav link ───────────────────────────────────────────────── */
 .nav-link-base {
   display: flex;
   align-items: center;
@@ -169,14 +156,14 @@ textarea.input-field { resize: none; }
   border-radius: 0.75rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border: 1px solid transparent;   /* always present — no layout shift */
+  border: 1px solid transparent;
   transition: background-color 0.15s, color 0.15s, border-color 0.15s;
   text-decoration: none;
 }
-.nav-link-base:not(.active) {
+.nav-link-base:not(.active-student):not(.active-alumni) {
   color: var(--text-muted);
 }
-.nav-link-base:not(.active):hover {
+.nav-link-base:not(.active-student):not(.active-alumni):hover {
   color: var(--text-primary);
   background-color: var(--bg-elevated);
 }
@@ -187,7 +174,7 @@ textarea.input-field { resize: none; }
 }
 .nav-link-base.active-alumni {
   background-color: rgba(16, 185, 129, 0.12);
-  color: #34d399;
+  color: #059669;
   border-color: rgba(16, 185, 129, 0.3);
 }
 
@@ -199,19 +186,96 @@ textarea.input-field { resize: none; }
   overflow: hidden;
 }
 
-/* ─── Light mode overrides ───────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES
+   All Tailwind hardcoded colors that need to flip in light mode
+   ══════════════════════════════════════════════════════════════ */
+
+/* Layout backgrounds */
 html.light aside,
 html.light header {
   background-color: #ffffff !important;
   border-color: var(--border-color) !important;
 }
-html.light .text-slate-100,
-html.light .text-slate-200,
-html.light .text-slate-300 { color: var(--text-primary) !important; }
-html.light .text-slate-400,
-html.light .text-slate-500 { color: var(--text-muted) !important; }
-html.light .bg-slate-900,
-html.light .bg-slate-950   { background-color: var(--bg-base) !important; }
-html.light .bg-slate-800   { background-color: var(--bg-elevated) !important; }
-html.light .border-slate-800,
-html.light .border-slate-700 { border-color: var(--border-color) !important; }
+html.light main {
+  background-color: var(--bg-base) !important;
+}
+
+/* Slate text shades → readable in light */
+html.light .text-white               { color: #0f172a !important; }
+html.light .text-slate-100           { color: #1e293b !important; }
+html.light .text-slate-200           { color: #1e293b !important; }
+html.light .text-slate-300           { color: #334155 !important; }
+html.light .text-slate-400           { color: #475569 !important; }
+html.light .text-slate-500           { color: #64748b !important; }
+html.light .text-slate-600           { color: #475569 !important; }
+
+/* Slate backgrounds → light surfaces */
+html.light .bg-slate-950             { background-color: #f1f5f9 !important; }
+html.light .bg-slate-900             { background-color: #f8fafc !important; }
+html.light .bg-slate-800             { background-color: #f0f4f8 !important; }
+html.light .bg-slate-800\/50         { background-color: rgba(240,244,248,0.8) !important; }
+html.light .bg-slate-700\/60         { background-color: rgba(226,232,240,0.9) !important; }
+html.light .bg-slate-700             { background-color: #e2e8f0 !important; }
+
+/* Slate borders → light borders */
+html.light .border-slate-800         { border-color: #e2e8f0 !important; }
+html.light .border-slate-700         { border-color: #cbd5e1 !important; }
+html.light .border-slate-600         { border-color: #94a3b8 !important; }
+
+/* Hover states that were dark */
+html.light .hover\:bg-slate-800:hover { background-color: #e2e8f0 !important; }
+html.light .hover\:bg-slate-700:hover { background-color: #cbd5e1 !important; }
+html.light .hover\:text-white:hover   { color: #0f172a !important; }
+
+/* Remove-button in light mode (was slate-700/60 which looks odd in light) */
+html.light .hover\:bg-red-500\/20:hover { background-color: rgba(239,68,68,0.1) !important; }
+
+/* Nav in sidebar */
+html.light nav a { color: var(--text-muted) !important; }
+html.light nav a:hover {
+  background-color: #e2e8f0 !important;
+  color: var(--text-primary) !important;
+}
+
+/* Card & surface backgrounds */
+html.light .card                     { background-color: #ffffff; border-color: #e2e8f0; }
+html.light .bg-slate-900\/80         { background-color: rgba(248,250,252,0.9) !important; }
+html.light .bg-slate-900\/50         { background-color: rgba(241,245,249,0.7) !important; }
+
+/* Header backdrop */
+html.light header.bg-slate-900\/80   { background-color: rgba(255,255,255,0.95) !important; }
+
+/* Input fields in light mode */
+html.light .input-field {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Specific section headings (h1, h2 etc) using text-white */
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white,
+html.light h4.text-white,
+html.light p.text-white,
+html.light span.text-white,
+html.light .font-semibold.text-white,
+html.light .font-bold.text-white      { color: #0f172a !important; }
+
+/* Status badges — keep colors vivid, just adjust bg */
+html.light .bg-indigo-500\/20         { background-color: rgba(99,102,241,0.12) !important; }
+html.light .bg-emerald-500\/20        { background-color: rgba(16,185,129,0.12) !important; }
+html.light .bg-amber-500\/10          { background-color: rgba(245,158,11,0.1) !important; }
+html.light .bg-red-500\/20            { background-color: rgba(239,68,68,0.1) !important; }
+html.light .bg-red-500\/10            { background-color: rgba(239,68,68,0.08) !important; }
+
+/* Active nav — keep vivid in both themes (already set via CSS vars) */
+html.light .nav-link-base.active-alumni { color: #047857 !important; }
+html.light .nav-link-base.active-student { color: #4f46e5 !important; }
+
+/* User name / email in sidebar bottom */
+html.light .text-white.text-sm,
+html.light .text-white.font-medium    { color: #0f172a !important; }
+
+/* Gradient text — leave as-is (indigo/purple gradients stay vivid) */
