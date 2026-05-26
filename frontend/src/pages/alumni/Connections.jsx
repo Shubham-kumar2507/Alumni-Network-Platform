@@ -1,12 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { connectionApi } from '../../api'
-import { Check, X, UserMinus, Users, Search } from 'lucide-react'
+import { connectionApi, messageApi } from '../../api'
+import { Check, X, UserMinus, Users, Search, MessageSquare, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import StudentDetailDrawer from '../../components/StudentDetailDrawer'
 
 export default function AlumniConnections() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [viewStudent, setViewStudent] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['alumni-connections'],
@@ -31,10 +35,16 @@ export default function AlumniConnections() {
     onError:   () => toast.error('Failed to disconnect'),
   })
 
+  const startChatMut = useMutation({
+    mutationFn: (userId) => messageApi.startChat(userId),
+    onSuccess: () => { navigate('/alumni/messages'); toast.success('Chat opened!') },
+    onError:   () => toast.error('Could not start chat'),
+  })
+
   const connections = data?.data ?? []
-  const filterFn  = c => c.other_user?.name?.toLowerCase().includes(search.toLowerCase())
-  const incoming   = connections.filter(c => c.status === 'pending' && c.is_received && filterFn(c))
-  const accepted   = connections.filter(c => c.status === 'accepted' && filterFn(c))
+  const filterFn = c => c.other_user?.name?.toLowerCase().includes(search.toLowerCase())
+  const incoming  = connections.filter(c => c.status === 'pending' && c.is_received && filterFn(c))
+  const accepted  = connections.filter(c => c.status === 'accepted' && filterFn(c))
 
   if (isLoading) return <div className="flex items-center justify-center h-64"><div className="loading-spinner" /></div>
 
@@ -42,7 +52,6 @@ export default function AlumniConnections() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-xl font-bold text-white">Connections</h1>
-        {/* Fixed search icon overlap */}
         <div className="search-wrapper w-64">
           <Search size={15} className="search-icon" />
           <input
@@ -74,10 +83,16 @@ export default function AlumniConnections() {
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
-                  <button onClick={() => acceptMut.mutate(c.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 text-xs border border-emerald-500/30 transition-colors">
+                  <button
+                    onClick={() => acceptMut.mutate(c.id)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 text-xs border border-emerald-500/30 transition-colors"
+                  >
                     <Check size={13} /> Accept
                   </button>
-                  <button onClick={() => rejectMut.mutate(c.id)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs border border-red-500/30 transition-colors">
+                  <button
+                    onClick={() => rejectMut.mutate(c.id)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs border border-red-500/30 transition-colors"
+                  >
                     <X size={13} /> Reject
                   </button>
                 </div>
@@ -87,7 +102,7 @@ export default function AlumniConnections() {
         </div>
       )}
 
-      {/* Accepted / Network */}
+      {/* Accepted / My Network */}
       <div>
         <h2 className="text-sm font-semibold text-slate-400 mb-3 uppercase tracking-wider">
           My Network ({accepted.length})
@@ -107,14 +122,34 @@ export default function AlumniConnections() {
                     {c.other_user?.alumni?.job_role ? ` ${c.other_user.alumni.job_role}` : ''}
                   </p>
                 </div>
-                <button
-                  onClick={() => disconnectMut.mutate(c.id)}
-                  disabled={disconnectMut.isPending}
-                  title="Remove connection"
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-400 hover:bg-red-500/20 hover:text-red-400 text-xs transition-colors border border-slate-600 flex-shrink-0"
-                >
-                  <UserMinus size={13} /> Remove
-                </button>
+                <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
+                  {/* View student profile */}
+                  <button
+                    onClick={() => setViewStudent(c.other_user)}
+                    title="View student profile"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-300 hover:bg-slate-700 text-xs transition-colors border border-slate-600"
+                  >
+                    <Eye size={13} /> View
+                  </button>
+                  {/* Message button */}
+                  <button
+                    onClick={() => startChatMut.mutate(c.other_user?.id)}
+                    disabled={startChatMut.isPending}
+                    title="Send message"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 text-xs transition-colors border border-indigo-500/30"
+                  >
+                    <MessageSquare size={13} /> Message
+                  </button>
+                  {/* Remove button */}
+                  <button
+                    onClick={() => disconnectMut.mutate(c.id)}
+                    disabled={disconnectMut.isPending}
+                    title="Remove connection"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-400 hover:bg-red-500/20 hover:text-red-400 text-xs transition-colors border border-slate-600"
+                  >
+                    <UserMinus size={13} /> Remove
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -125,6 +160,9 @@ export default function AlumniConnections() {
           </div>
         )}
       </div>
+
+      {/* Student detail drawer */}
+      <StudentDetailDrawer student={viewStudent} onClose={() => setViewStudent(null)} />
     </div>
   )
 }
