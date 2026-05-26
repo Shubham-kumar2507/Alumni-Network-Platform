@@ -169,19 +169,6 @@ export default function StudentProfile() {
           </button>
         </div>
       </div>
-
-      {/* Resume */}
-      <div className="card p-6">
-        <h2 className="text-base font-semibold text-white mb-4">Resume</h2>
-        <label className="flex items-center justify-center gap-3 p-8 border-2 border-dashed border-slate-700 rounded-xl hover:border-indigo-500/50 cursor-pointer transition-colors group">
-          <Upload size={20} className="text-slate-500 group-hover:text-indigo-400" />
-          <div className="text-center">
-            <p className="text-sm text-slate-400 group-hover:text-slate-200">Click to upload resume (PDF)</p>
-            {profile?.student?.resume_path && <p className="text-xs text-indigo-400 mt-1">Current: {profile.student.resume_path.split('/').pop()}</p>}
-          </div>
-          <input type="file" accept=".pdf,.doc,.docx" className="hidden" onChange={e => e.target.files[0] && resumeMut.mutate(e.target.files[0])} />
-        </label>
-      </div>
     </div>
   )
 }
