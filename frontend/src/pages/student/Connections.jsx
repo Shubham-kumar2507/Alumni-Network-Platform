@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { connectionApi } from '../../api'
-import { Check, X, UserMinus, Users, Search } from 'lucide-react'
+import { connectionApi, messageApi } from '../../api'
+import { Check, X, UserMinus, Users, Search, MessageSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-function ConnectionCard({ conn, onAccept, onReject, onCancel, onDisconnect }) {
+function ConnectionCard({ conn, onAccept, onReject, onCancel, onDisconnect, onMessage }) {
   const isIncoming = conn.status === 'pending' && conn.is_received
   const isOutgoing  = conn.status === 'pending' && !conn.is_received
   const isAccepted  = conn.status === 'accepted'
@@ -55,6 +56,9 @@ function ConnectionCard({ conn, onAccept, onReject, onCancel, onDisconnect }) {
             <span className="text-xs text-emerald-400 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
               Connected
             </span>
+            <button onClick={onMessage} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 text-xs transition-colors border border-indigo-500/30">
+              <MessageSquare size={13} /> Message
+            </button>
             <button onClick={onDisconnect} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-400 hover:bg-red-500/20 hover:text-red-400 text-xs transition-colors border border-slate-600">
               <UserMinus size={13} /> Remove
             </button>
@@ -67,6 +71,7 @@ function ConnectionCard({ conn, onAccept, onReject, onCancel, onDisconnect }) {
 
 export default function Connections() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
 
   const { data, isLoading } = useQuery({
@@ -96,6 +101,12 @@ export default function Connections() {
     mutationFn: (id) => connectionApi.disconnect(id),
     onSuccess: () => { qc.invalidateQueries(['connections']); toast.success('Removed from connections') },
     onError:   () => toast.error('Failed to disconnect'),
+  })
+
+  const startChatMut = useMutation({
+    mutationFn: (userId) => messageApi.startChat(userId),
+    onSuccess: () => { navigate('/student/messages'); toast.success('Chat opened!') },
+    onError:   () => toast.error('Could not start chat'),
   })
 
   const connections = data?.data ?? []
@@ -168,6 +179,7 @@ export default function Connections() {
             {accepted.map(c => (
               <ConnectionCard
                 key={c.id} conn={{ ...c, is_received: false }}
+                onMessage={() => startChatMut.mutate(c.other_user?.id)}
                 onDisconnect={() => disconnectMut.mutate(c.id)}
               />
             ))}
