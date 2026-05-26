@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { mentorApi } from '../../api'
-import { Star, Clock, X } from 'lucide-react'
+import { mentorApi, messageApi } from '../../api'
+import { Star, Clock, X, MessageSquare } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 
 const STATUS_STYLES = {
   pending:  'bg-amber-500/10 text-amber-400 border-amber-500/20',
@@ -11,6 +12,7 @@ const STATUS_STYLES = {
 
 export default function StudentMentorship() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
 
   const { data, isLoading } = useQuery({
     queryKey: ['mentors'],
@@ -21,6 +23,12 @@ export default function StudentMentorship() {
     mutationFn: (id) => mentorApi.withdraw(id),
     onSuccess: () => { qc.invalidateQueries(['mentors']); toast.success('Mentor request withdrawn') },
     onError:   () => toast.error('Failed to withdraw request'),
+  })
+
+  const startChatMut = useMutation({
+    mutationFn: (userId) => messageApi.startChat(userId),
+    onSuccess: () => { navigate('/student/messages'); toast.success('Chat opened!') },
+    onError:   () => toast.error('Could not start chat'),
   })
 
   const requests = data?.data ?? []
@@ -55,7 +63,17 @@ export default function StudentMentorship() {
                   <span className={`text-xs px-2.5 py-1 rounded-full border font-medium capitalize ${STATUS_STYLES[r.status]}`}>
                     {r.status}
                   </span>
-                  {/* Withdraw button for pending OR accepted requests */}
+                  {/* Message button for accepted mentors */}
+                  {r.status === 'accepted' && (
+                    <button
+                      onClick={() => startChatMut.mutate(r.alumni?.id)}
+                      disabled={startChatMut.isPending}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 text-xs transition-colors border border-indigo-500/30"
+                    >
+                      <MessageSquare size={13} /> Message
+                    </button>
+                  )}
+                  {/* Withdraw / Leave button */}
                   {(r.status === 'pending' || r.status === 'accepted') && (
                     <button
                       onClick={() => withdrawMut.mutate(r.id)}
