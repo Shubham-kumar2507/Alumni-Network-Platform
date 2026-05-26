@@ -1,6 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 
+// Landing
+import LandingPage from './pages/LandingPage'
+
 // Auth pages
 import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
@@ -35,7 +38,8 @@ function ProtectedRoute({ children, role }) {
   return children
 }
 
-function PublicRoute({ children }) {
+// Auth pages (login/register) redirect logged-in users to their dashboard
+function AuthRoute({ children }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-900"><div className="loading-spinner" /></div>
   if (user) return <Navigate to={user.role === 'alumni' ? '/alumni' : '/student'} replace />
@@ -46,36 +50,38 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-        <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
+        {/* Landing — always visible at "/" */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Auth — redirects to dashboard if already logged in */}
+        <Route path="/login"    element={<AuthRoute><LoginPage /></AuthRoute>} />
+        <Route path="/register" element={<AuthRoute><RegisterPage /></AuthRoute>} />
 
         {/* Student */}
         <Route path="/student" element={<ProtectedRoute role="student"><StudentLayout /></ProtectedRoute>}>
           <Route index element={<StudentDashboard />} />
-          <Route path="profile" element={<StudentProfile />} />
-          <Route path="alumni" element={<AlumniDiscovery />} />
-          <Route path="alumni/:id" element={<AlumniProfile />} />
+          <Route path="profile"     element={<StudentProfile />} />
+          <Route path="alumni"      element={<AlumniDiscovery />} />
+          <Route path="alumni/:id"  element={<AlumniProfile />} />
           <Route path="connections" element={<Connections />} />
-          <Route path="mentorship" element={<Mentorship />} />
-          <Route path="referrals" element={<Referrals />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="events" element={<Events />} />
+          <Route path="mentorship"  element={<Mentorship />} />
+          <Route path="referrals"   element={<Referrals />} />
+          <Route path="messages"    element={<Messages />} />
+          <Route path="events"      element={<Events />} />
         </Route>
 
         {/* Alumni */}
         <Route path="/alumni" element={<ProtectedRoute role="alumni"><AlumniLayout /></ProtectedRoute>}>
           <Route index element={<AlumniDashboard />} />
-          <Route path="profile" element={<AlumniProfileEdit />} />
+          <Route path="profile"     element={<AlumniProfileEdit />} />
           <Route path="connections" element={<AlumniConnections />} />
-          <Route path="mentorship" element={<AlumniMentorship />} />
-          <Route path="referrals" element={<AlumniReferrals />} />
-          <Route path="messages" element={<Messages />} />
-          <Route path="events" element={<Events />} />
+          <Route path="mentorship"  element={<AlumniMentorship />} />
+          <Route path="referrals"   element={<AlumniReferrals />} />
+          <Route path="messages"    element={<Messages />} />
+          <Route path="events"      element={<Events />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )
