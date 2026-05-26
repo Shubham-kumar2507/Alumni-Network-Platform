@@ -1,12 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { mentorApi, messageApi } from '../../api'
-import { Check, X, Star, Clock, MessageSquare, UserMinus } from 'lucide-react'
+import { Check, X, Star, Clock, MessageSquare, UserMinus, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import StudentDetailDrawer from '../../components/StudentDetailDrawer'
+import { useState } from 'react'
 
 export default function AlumniMentorship() {
   const qc = useQueryClient()
   const navigate = useNavigate()
+  const [viewStudent, setViewStudent] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['alumni-mentors'],
@@ -122,10 +125,18 @@ export default function AlumniMentorship() {
                     <p className="text-xs text-slate-500 mt-0.5">{r.student.email}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
                   <span className="text-xs text-emerald-400 px-2 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                     Mentoring
                   </span>
+                  {/* View student profile */}
+                  <button
+                    onClick={() => setViewStudent(r.student)}
+                    title="View student profile"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-300 hover:bg-slate-700 text-xs transition-colors border border-slate-600"
+                  >
+                    <Eye size={13} /> View
+                  </button>
                   {/* Message mentee button */}
                   <button
                     onClick={() => startChatMut.mutate(r.student?.id)}
@@ -164,6 +175,9 @@ export default function AlumniMentorship() {
           <p className="text-xs mt-1 text-slate-600">Students will send requests to you from your public profile</p>
         </div>
       )}
+
+      {/* Student detail drawer */}
+      <StudentDetailDrawer student={viewStudent} onClose={() => setViewStudent(null)} />
     </div>
   )
 }
